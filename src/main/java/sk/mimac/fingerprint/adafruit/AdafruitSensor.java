@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.*;
 import org.slf4j.*;
 import sk.mimac.fingerprint.FingerprintException;
+import sk.mimac.fingerprint.SensorParameters;
 import static sk.mimac.fingerprint.adafruit.AdafruitConstants.*;
 
 /**
@@ -57,10 +58,12 @@ public class AdafruitSensor implements FingerprintSensor {
 
     @Override
     public void close() throws IOException {
-        try {
-            serial.disconnect();
-        } catch (Exception ex) {
-            logger.warn("Error while disconnecting from fingerprint sensor: " + ex);
+        if (serial.isConnected()) {
+            try {
+                serial.disconnect();
+            } catch (Exception ex) {
+                logger.warn("Error while disconnecting from fingerprint sensor: " + ex);
+            }
         }
     }
 
@@ -141,6 +144,28 @@ public class AdafruitSensor implements FingerprintSensor {
         writePacket(FINGERPRINT_COMMANDPACKET, new byte[]{FINGERPRINT_STORE, 0x01, (byte) (number >> 8), (byte) (number & 0xFF)});
         byte[] reply = getReply();
         if (reply[0] != FINGERPRINT_ACKPACKET || reply[1] != FINGERPRINT_OK) {
+            throw new FingerprintException("Got wrong data from fingerprint sensor: " + bytesToHex(reply), "sensor.bad.data");
+        }
+    }
+
+    @Override
+    public SensorParameters readParameters() throws FingerprintException {
+        writePacket(FINGERPRINT_COMMANDPACKET, new byte[]{FINGERPRINT_READ_SYS_PARAM});
+        byte[] reply = getReply();
+        if (reply[0] != FINGERPRINT_ACKPACKET && reply[1] != FINGERPRINT_OK) {
+            throw new FingerprintException("Got wrong data from fingerprint sensor: " + bytesToHex(reply), "sensor.bad.data");
+        }
+        SensorParameters parameters = new SensorParameters();
+        parameters.setLibrarySize((reply[6] & 0xFF) << 8 | reply[7] & 0xFF);
+        parameters.setSecurityLevel(reply[9]);
+        return parameters;
+    }
+
+    @Override
+    public void setSecurityLevel(int securityLevel) throws FingerprintException {
+        writePacket(FINGERPRINT_COMMANDPACKET, new byte[]{FINGERPRINT_SET_SYS_PARAM, 0x05, (byte) securityLevel});
+        byte[] reply = getReply();
+        if (reply[0] != FINGERPRINT_ACKPACKET && reply[1] != FINGERPRINT_OK) {
             throw new FingerprintException("Got wrong data from fingerprint sensor: " + bytesToHex(reply), "sensor.bad.data");
         }
     }
@@ -232,17 +257,7 @@ public class AdafruitSensor implements FingerprintSensor {
         int length = 0;
         try {
             while (true) {
-                int timer = 0;
-                while (input.available() == 0) {
-                    try {
-                        Thread.sleep(7);
-                    } catch (InterruptedException ignore) {
-                    }
-                    timer++;
-                    if (timer >= 150) {
-                        throw new FingerprintException("Timeout", "sensor.not.responding");
-                    }
-                }
+                waitForInputAvailable(index);
                 byte data = (byte) input.read();
                 if ((index == 0) && (data != (byte) (FINGERPRINT_STARTCODE >> 8))) {
                     continue;
@@ -253,9 +268,7 @@ public class AdafruitSensor implements FingerprintSensor {
                     if ((reply.get(0) != (byte) (FINGERPRINT_STARTCODE >> 8)) || (reply.get(1) != (byte) FINGERPRINT_STARTCODE)) {
                         throw new FingerprintException("Bad packet", "sensor.bad.data");
                     }
-                    length = reply.get(7) & 0xFF;
-                    length <<= 8;
-                    length |= reply.get(8) & 0xFF;
+                    length = ((reply.get(7) & 0xFF) << 8) | reply.get(8) & 0xFF;
                 }
                 if (index >= (length + 8)) {
                     byte[] result = new byte[length - 1];
@@ -269,6 +282,20 @@ public class AdafruitSensor implements FingerprintSensor {
             }
         } catch (IOException ex) {
             throw new FingerprintException("Can't read data from sensor", "sensor.cant.read", ex);
+        }
+    }
+
+    public void waitForInputAvailable(int index) throws IOException, FingerprintException {
+        int timer = 0;
+        while (input.available() == 0) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException ignore) {
+            }
+            timer++;
+            if (timer >= 150) {
+                throw new FingerprintException("Timeout at index " + index, "sensor.not.responding");
+            }
         }
     }
 

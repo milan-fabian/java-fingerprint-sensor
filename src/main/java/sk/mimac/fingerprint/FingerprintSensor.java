@@ -77,4 +77,21 @@ public interface FingerprintSensor extends Closeable {
      */
     Integer searchFingerprint() throws FingerprintException;
 
+    /**
+     * Read basic parameters from the fingerprint sensor.
+     * 
+     * @return wrapper for parameters
+     * @throws FingerprintException if there is problem with communication to
+     * sensor
+     */
+    SensorParameters readParameters() throws FingerprintException;
+
+    /**
+     * Set security level for matching fingerprints
+     * 
+     * @param securityLevel from 1 (lowest security) to 5 (highest secutity)
+     * @throws FingerprintException if there is problem with communication to
+     * sensor 
+     */
+    void setSecurityLevel(int securityLevel) throws FingerprintException;
 }

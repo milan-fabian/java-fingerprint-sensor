@@ -1,7 +1,7 @@
 package sk.mimac.fingerprint.adafruit;
 
 /**
- * For fingerprint sensor ZFM-20. More info at
+ * For fingerprint sensor ZFM-20 / R307. More info at
  * https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/.
  *
  * @author Milan Fabian
@@ -33,10 +33,10 @@ public class AdafruitConstants {
 
     public static final int FINGERPRINT_STARTCODE = 0xEF01;
 
-    public static final byte FINGERPRINT_COMMANDPACKET = 0x1;
-    public static final byte FINGERPRINT_DATAPACKET = 0x2;
-    public static final byte FINGERPRINT_ACKPACKET = 0x7;
-    public static final byte FINGERPRINT_ENDDATAPACKET = 0x8;
+    public static final byte FINGERPRINT_COMMANDPACKET = 0x01;
+    public static final byte FINGERPRINT_DATAPACKET = 0x02;
+    public static final byte FINGERPRINT_ACKPACKET = 0x07;
+    public static final byte FINGERPRINT_ENDDATAPACKET = 0x08;
 
     public static final int FINGERPRINT_TIMEOUT = 0xFF;
     public static final int FINGERPRINT_BADPACKET = 0xFE;
@@ -51,6 +51,9 @@ public class AdafruitConstants {
     public static final int FINGERPRINT_DOWNLOAD = 0x09;
     public static final int FINGERPRINT_DELETE = 0x0C;
     public static final int FINGERPRINT_EMPTY = 0x0D;
+    public static final int FINGERPRINT_SET_SYS_PARAM = 0x0E;
+    public static final int FINGERPRINT_READ_SYS_PARAM = 0x0F;
     public static final int FINGERPRINT_VERIFYPASSWORD = 0x13;
+    public static final int FINGERPRINT_READ_SYS_INFO = 0x16;
     public static final int FINGERPRINT_TEMPLATECOUNT = 0x1D;
 }
