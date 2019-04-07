@@ -1,5 +1,5 @@
 # java-fingerprint-sensor
-Java library for interfacing with Adafruit fingerprint sensor/reader ZFM-20 (https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/, https://www.adafruit.com/product/751) through serial interface. 
+Java library for interfacing with Adafruit fingerprint sensor/reader ZFM-20 (https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/, https://www.adafruit.com/product/751) through serial interface. Also works with R30x fingerprint sensor (e.g. from Aliexpress).
 
 Tested on Windows (with COMx) and Linux (with /dev/ttyUSBx), also on Raspberry Pi.
 
@@ -42,7 +42,7 @@ if (sensor.hasFingerprint()) {
 }
 ```
 
-For detailed documentation, please see 
+For additional documentation, please see javadocs.
 
 ## TODO 
 
